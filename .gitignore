@@ -1,0 +1,4 @@
+output.xml
+.editorconfig
+/target/
+/.vscode/
