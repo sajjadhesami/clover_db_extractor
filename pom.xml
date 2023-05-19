@@ -46,14 +46,34 @@
   </dependencies>
   <build>
     <plugins>
-      <plugin>
-      <artifactId>maven-assembly-plugin</artifactId>
-      <configuration>
-        <descriptorRefs>
-          <descriptorRef>jar-with-dependencies</descriptorRef>
-        </descriptorRefs>
-      </configuration>
-    </plugin>
+    <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.2.0</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <mainClass>ie.tcd.scss.csl.App</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+     <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.6.0</version>
+        <configuration>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <mainClass>ie.tcd.scss.csl.App</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
