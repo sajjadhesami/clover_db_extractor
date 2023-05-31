@@ -106,8 +106,14 @@ public class CloverDatabaseReader {
                                 Element testCaseElement = doc.createElement("testCase");
                                 // add the test name and source method as attributes
                                 testCaseElement.setAttribute("name", testCaseInfo.getTestName());
-                                testCaseElement.setAttribute("sourceQualifiedMethod",
+                                testCaseElement.setAttribute("SourceMethodName",
+                                        testCaseInfo.getSourceMethodName());
+                                testCaseElement.setAttribute("QualifiedName",
+                                        testCaseInfo.getQualifiedName());
+                                testCaseElement.setAttribute("RuntimeTypeName",
                                         testCaseInfo.getRuntimeTypeName());
+                                testCaseElement.setAttribute("TestName",
+                                        testCaseInfo.getTestName());
                                 // add the test case element as a child element of the statement element
                                 statementElement.appendChild(testCaseElement);
                             }
