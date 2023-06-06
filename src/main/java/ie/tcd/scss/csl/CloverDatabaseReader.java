@@ -1,7 +1,11 @@
 package ie.tcd.scss.csl;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -16,12 +20,18 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import com.atlassian.clover.CloverDatabase;
 import com.atlassian.clover.CoverageData;
 import com.atlassian.clover.CoverageDataSpec;
 import com.atlassian.clover.api.CloverException;
 import com.atlassian.clover.api.registry.HasMetrics;
+import com.atlassian.clover.context.ContextSet;
+import com.atlassian.clover.registry.CoverageDataRange;
+import com.atlassian.clover.registry.entities.BasicElementInfo;
+import com.atlassian.clover.registry.entities.FullBranchInfo;
+import com.atlassian.clover.registry.entities.FullElementInfo;
 import com.atlassian.clover.registry.entities.FullFileInfo;
 import com.atlassian.clover.registry.entities.FullStatementInfo;
 import com.atlassian.clover.registry.entities.LineInfo;
@@ -76,25 +86,38 @@ public class CloverDatabaseReader {
                 Element fileElement = doc.createElement("file");
                 // add the file name and path as attributes
                 fileElement.setAttribute("path", fullFileInfo.getPhysicalFile().getPath());
-
+                // add the file element as a child element of the root element
+                Map<Integer, Set<TestCaseInfo>> lineElementMap = new HashMap<Integer, Set<TestCaseInfo>>();
                 // Get the lines
                 LineInfo[] lines = fullFileInfo.getLineInfo(true, true);
-
                 // loop through the lines
                 for (LineInfo line : lines) {
                     if (line != null) {
                         // for each line, create a line element
-                        Element lineElement = doc.createElement("line");
-                        // add the line number as an attribute
-                        lineElement.setAttribute("number", String.valueOf(line.getLine()));
+                        Set<TestCaseInfo> lineElement = null;
+                        if (lineElementMap.containsKey(line.getLine())) {
+                            lineElement = lineElementMap.get(line.getLine());
+                        } else {
+                            // lineElement = doc.createElement("line");
+                            // lineElement.setAttribute("number", String.valueOf(line.getLine()));
+                            // lineElement.setAttribute("hasBranch", String.valueOf(line.hasBranches()));
+                            lineElement = new HashSet<TestCaseInfo>();
+                        }
                         // Get the statements
                         FullStatementInfo[] statements = line.getStatements();
                         // loop through the statements
                         for (FullStatementInfo statement : statements) {
-                            // for each statement, create a statement element
-                            Element statementElement = doc.createElement("statement");
                             // add the hit count as an attribute
-                            statementElement.setAttribute("hitCount", String.valueOf(statement.getHitCount()));
+
+                            // lineElement.setAttribute("hitCount",
+                            // String.valueOf(statement.getHitCount()));
+                            // lineElement.setAttribute("StartLine",
+                            // String.valueOf(statement.getStartLine()));
+                            // lineElement.setAttribute("EndLine", String.valueOf(statement.getEndLine()));
+                            // lineElement.setAttribute("StartColumn",
+                            // String.valueOf(statement.getStartColumn()));
+                            // lineElement.setAttribute("EndColumn",
+                            // String.valueOf(statement.getEndColumn()));
 
                             // add the test cases that cover the statement as child elements
                             Set<TestCaseInfo> caseInfos = cd.getTestsCovering(
@@ -105,24 +128,48 @@ public class CloverDatabaseReader {
                                 // for each test case, create a test case element
                                 Element testCaseElement = doc.createElement("testCase");
                                 // add the test name and source method as attributes
-                                testCaseElement.setAttribute("name", testCaseInfo.getTestName());
-                                testCaseElement.setAttribute("SourceMethodName",
-                                        testCaseInfo.getSourceMethodName());
+                                // testCaseElement.setAttribute("name", testCaseInfo.getTestName());
                                 testCaseElement.setAttribute("QualifiedName",
                                         testCaseInfo.getQualifiedName());
-                                testCaseElement.setAttribute("RuntimeTypeName",
-                                        testCaseInfo.getRuntimeTypeName());
-                                testCaseElement.setAttribute("TestName",
-                                        testCaseInfo.getTestName());
                                 // add the test case element as a child element of the statement element
-                                statementElement.appendChild(testCaseElement);
+                                lineElement.add(testCaseInfo);
+                                // lineElement.appendChild(testCaseElement); // !!!!!!!!!
                             }
                             // add the statement element as a child element of the line element
-                            lineElement.appendChild(statementElement);
+                            lineElementMap.put(Integer.valueOf(line.getLine()), lineElement);
+                            if (statement.getEndLine() != line.getLine()) {
+                                for (int i = line.getLine() + 1; i <= statement.getEndLine(); i++) {
+                                    if (!lineElementMap.containsKey(i)) {
+                                        // Element element = (Element) lineElement.cloneNode(true);
+                                        // element.setAttribute("number", String.valueOf(i));
+
+                                        lineElementMap.put(Integer.valueOf(i), lineElement);
+                                    } else {
+                                        Set<TestCaseInfo> temp = lineElementMap.get(i);
+
+                                        for (TestCaseInfo testCaseInfo_ : lineElement) {
+                                            temp.add(testCaseInfo_);
+                                            // Node node = lineElement.item(q);
+                                            // temp.appendChild(node.cloneNode(true));
+                                        }
+                                        lineElementMap.replace(Integer.valueOf(i), temp);
+                                    }
+                                }
+                            }
                         }
-                        // add the line element as a child element of the file element
-                        fileElement.appendChild(lineElement);
                     }
+                }
+                // add the line elements as a children elements of the file element
+                for (Integer key : lineElementMap.keySet()) {
+                    Set<TestCaseInfo> lineElement = lineElementMap.get(key);
+                    Element lineElement_ = doc.createElement("line");
+                    lineElement_.setAttribute("number", String.valueOf(key));
+                    for (TestCaseInfo testCaseInfo : lineElement) {
+                        Element testCaseElement = doc.createElement("testCase");
+                        testCaseElement.setAttribute("QualifiedName", testCaseInfo.getQualifiedName());
+                        lineElement_.appendChild(testCaseElement);
+                    }
+                    fileElement.appendChild(lineElement_);
                 }
                 // add the file element as a child element of the root element
                 rootElement.appendChild(fileElement);

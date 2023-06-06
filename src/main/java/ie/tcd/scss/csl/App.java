@@ -52,6 +52,7 @@ public final class App {
                 System.out.println("XML path: " + outputPath);
                 try {
                     CloverDatabaseReader cloverDatabaseReader = new CloverDatabaseReader(dbPath, outputPath);
+
                     cloverDatabaseReader.generateXML();
                 } catch (CloverException | ParserConfigurationException | TransformerException e) {
                     e.printStackTrace();
