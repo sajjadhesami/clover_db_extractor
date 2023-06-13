@@ -2,6 +2,7 @@ package ie.tcd.scss.csl;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -88,8 +89,11 @@ public class CloverDatabaseReader {
                 fileElement.setAttribute("path", fullFileInfo.getPhysicalFile().getPath());
                 // add the file element as a child element of the root element
                 Map<Integer, Set<TestCaseInfo>> lineElementMap = new HashMap<Integer, Set<TestCaseInfo>>();
+                // add the test cases that cover the file as line -1
+                lineElementMap.put(-1, cd.getTestsCovering(fullFileInfo));
                 // Get the lines
                 LineInfo[] lines = fullFileInfo.getLineInfo(true, true);
+
                 // loop through the lines
                 for (LineInfo line : lines) {
                     if (line != null) {
@@ -120,8 +124,7 @@ public class CloverDatabaseReader {
                             // String.valueOf(statement.getEndColumn()));
 
                             // add the test cases that cover the statement as child elements
-                            Set<TestCaseInfo> caseInfos = cd.getTestsCovering(
-                                    new SimpleCoverageRange(statement.getDataIndex(), statement.getDataLength()));
+                            Set<TestCaseInfo> caseInfos = cd.getTestsCovering(statement);
 
                             // loop through the test cases
                             for (TestCaseInfo testCaseInfo : caseInfos) {
@@ -171,6 +174,7 @@ public class CloverDatabaseReader {
                     }
                     fileElement.appendChild(lineElement_);
                 }
+
                 // add the file element as a child element of the root element
                 rootElement.appendChild(fileElement);
             } else {
