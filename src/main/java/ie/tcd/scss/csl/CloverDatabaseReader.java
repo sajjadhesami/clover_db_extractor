@@ -55,7 +55,7 @@ public class CloverDatabaseReader {
     }
 
     // Generate the XML file
-    public void generateXML() throws CloverException, ParserConfigurationException, TransformerException {
+    public void generateReport() throws CloverException, ParserConfigurationException, TransformerException {
 
         // Create the XML document
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -77,6 +77,10 @@ public class CloverDatabaseReader {
                 return arg0.getMetrics().getNumElements() > 0;
             }
         });
+        // delete all records in the database
+        if (this.helper != null) {
+            this.helper.deleteAllRecords();
+        }
         // loop through the files
         for (FullFileInfo fullFileInfo : fullFileInfos) {
             if (fullFileInfo != null && fullFileInfo instanceof FullFileInfo) {

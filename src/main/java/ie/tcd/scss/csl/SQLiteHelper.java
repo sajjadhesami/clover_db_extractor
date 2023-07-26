@@ -75,4 +75,30 @@ public class SQLiteHelper {
             }
         }
     }
+
+    public void deleteAllRecords() {
+        Connection conn = null;
+        Statement stmt = null;
+
+        try {
+            // Connect to the database
+            conn = DriverManager.getConnection(url);
+
+            // Create and execute the query
+            String sql = "DELETE FROM test_coverage";
+            stmt = conn.createStatement();
+            stmt.executeUpdate(sql);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        } finally {
+            try {
+                if (stmt != null)
+                    stmt.close();
+                if (conn != null)
+                    conn.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+    }
 }

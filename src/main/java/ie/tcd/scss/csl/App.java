@@ -46,7 +46,7 @@ public final class App {
             if (outputPath == null) {
                 try {
                     CloverDatabaseReader cloverDatabaseReader = new CloverDatabaseReader(dbPath);
-                    cloverDatabaseReader.generateXML();
+                    cloverDatabaseReader.generateReport();
                 } catch (CloverException | ParserConfigurationException | TransformerException e) {
                     e.printStackTrace();
                 }
@@ -56,7 +56,7 @@ public final class App {
                     CloverDatabaseReader cloverDatabaseReader = new CloverDatabaseReader(dbPath, outputPath,
                             outputDBPath);
 
-                    cloverDatabaseReader.generateXML();
+                    cloverDatabaseReader.generateReport();
                 } catch (CloverException | ParserConfigurationException | TransformerException e) {
                     e.printStackTrace();
                 }
