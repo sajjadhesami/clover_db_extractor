@@ -25,6 +25,7 @@ public final class App {
         // add options
         options.addOption("f", true, "database path");
         options.addOption("o", true, "XML path");
+        options.addOption("output_db", true, "output database path");
 
         // create a parser
         CommandLineParser parser = new DefaultParser();
@@ -35,6 +36,7 @@ public final class App {
             // retrieve the values of the options
             String dbPath = cmd.getOptionValue("f");
             String outputPath = cmd.getOptionValue("o");
+            String outputDBPath = cmd.getOptionValue("output_db");
             if (dbPath == null) {
                 System.out.println("Please specify the path to the Clover database");
                 return;
@@ -51,7 +53,8 @@ public final class App {
             } else {
                 System.out.println("XML path: " + outputPath);
                 try {
-                    CloverDatabaseReader cloverDatabaseReader = new CloverDatabaseReader(dbPath, outputPath);
+                    CloverDatabaseReader cloverDatabaseReader = new CloverDatabaseReader(dbPath, outputPath,
+                            outputDBPath);
 
                     cloverDatabaseReader.generateXML();
                 } catch (CloverException | ParserConfigurationException | TransformerException e) {

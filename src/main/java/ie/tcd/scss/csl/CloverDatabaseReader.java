@@ -1,8 +1,6 @@
 package ie.tcd.scss.csl;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -21,30 +19,25 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
 import com.atlassian.clover.CloverDatabase;
 import com.atlassian.clover.CoverageData;
 import com.atlassian.clover.CoverageDataSpec;
 import com.atlassian.clover.api.CloverException;
 import com.atlassian.clover.api.registry.HasMetrics;
-import com.atlassian.clover.context.ContextSet;
-import com.atlassian.clover.registry.CoverageDataRange;
-import com.atlassian.clover.registry.entities.BasicElementInfo;
-import com.atlassian.clover.registry.entities.FullBranchInfo;
-import com.atlassian.clover.registry.entities.FullElementInfo;
 import com.atlassian.clover.registry.entities.FullFileInfo;
 import com.atlassian.clover.registry.entities.FullStatementInfo;
 import com.atlassian.clover.registry.entities.LineInfo;
 import com.atlassian.clover.registry.entities.TestCaseInfo;
 import com.atlassian.clover.registry.metrics.HasMetricsFilter;
-import com.atlassian.clover.util.SimpleCoverageRange;
 
 public class CloverDatabaseReader {
     // path to the Clover database
     private String dbPath;
     // path to the output xml file (default: ./output.xml)
     private String outputPath = "./output.xml";
+    // path to the output database file (for modified littleDarwin)
+    private String outputDBPath = null;
+    private SQLiteHelper helper = null;
 
     // Constructor with default output path
     public CloverDatabaseReader(String dbPath) {
@@ -52,9 +45,13 @@ public class CloverDatabaseReader {
     }
 
     // Constructor with custom output path
-    public CloverDatabaseReader(String dbPath, String outputPath) {
+    public CloverDatabaseReader(String dbPath, String outputPath, String outputDBPath) {
         this.dbPath = dbPath;
         this.outputPath = outputPath;
+        this.outputDBPath = outputDBPath;
+        if (this.outputDBPath != null)
+            this.helper = new SQLiteHelper(this.outputDBPath);
+
     }
 
     // Generate the XML file
@@ -162,6 +159,11 @@ public class CloverDatabaseReader {
                         }
                     }
                 }
+                // get the file id from the database
+                int file_id = 0;
+                if (helper != null) {
+                    file_id = helper.getRecordId(fullFileInfo.getPhysicalFile().getPath());
+                }
                 // add the line elements as a children elements of the file element
                 for (Integer key : lineElementMap.keySet()) {
                     Set<TestCaseInfo> lineElement = lineElementMap.get(key);
@@ -171,6 +173,9 @@ public class CloverDatabaseReader {
                         Element testCaseElement = doc.createElement("testCase");
                         testCaseElement.setAttribute("QualifiedName", testCaseInfo.getQualifiedName());
                         lineElement_.appendChild(testCaseElement);
+                        if (helper != null) {
+                            helper.insertRecord(file_id, key, testCaseInfo.getQualifiedName());
+                        }
                     }
                     fileElement.appendChild(lineElement_);
                 }
