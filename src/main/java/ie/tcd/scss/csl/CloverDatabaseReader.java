@@ -49,9 +49,10 @@ public class CloverDatabaseReader {
         this.dbPath = dbPath;
         this.outputPath = outputPath;
         this.outputDBPath = outputDBPath;
-        if (this.outputDBPath != null)
+        if (this.outputDBPath != null) {
             this.helper = new SQLiteHelper(this.outputDBPath);
-
+            this.helper.connect();
+        }
     }
 
     // Generate the XML file
@@ -79,7 +80,12 @@ public class CloverDatabaseReader {
         });
         // delete all records in the database
         if (this.helper != null) {
-            this.helper.deleteAllRecords();
+            this.helper.deleteAllCoverageRecords();
+            this.helper.deleteAllTestRecords();
+            Set<TestCaseInfo> set = cd.getTests();
+            for (TestCaseInfo testCaseInfo : set) {
+                helper.insertTestRecord(testCaseInfo.getId() + 1, testCaseInfo.getQualifiedName());
+            }
         }
         // loop through the files
         for (FullFileInfo fullFileInfo : fullFileInfos) {
@@ -178,7 +184,7 @@ public class CloverDatabaseReader {
                         testCaseElement.setAttribute("QualifiedName", testCaseInfo.getQualifiedName());
                         lineElement_.appendChild(testCaseElement);
                         if (helper != null) {
-                            helper.insertRecord(file_id, key, testCaseInfo.getQualifiedName());
+                            helper.insertCoverageRecord(file_id, key, testCaseInfo.getId() + 1);
                         }
                     }
                     fileElement.appendChild(lineElement_);
@@ -198,5 +204,8 @@ public class CloverDatabaseReader {
         DOMSource source = new DOMSource(doc);
         StreamResult result = new StreamResult(new File(this.outputPath));
         transformer.transform(source, result);
+        if (this.helper != null) {
+            this.helper.disconnect();
+        }
     }
 }
