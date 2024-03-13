@@ -70,7 +70,6 @@ public class CloverDatabaseReader {
         // Load the Clover database
         CloverDatabase db = CloverDatabase.loadWithCoverage(this.dbPath, new CoverageDataSpec());
         CoverageData cd = db.getCoverageData();
-
         // Get the files that have coverage
         List<FullFileInfo> fullFileInfos = db.getAppOnlyModel().getFiles(new HasMetricsFilter() {
             @Override

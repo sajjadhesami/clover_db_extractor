@@ -52,6 +52,7 @@ public final class App {
                 }
             } else {
                 System.out.println("XML path: " + outputPath);
+                System.out.println("Output DB path: " + outputDBPath);
                 try {
                     CloverDatabaseReader cloverDatabaseReader = new CloverDatabaseReader(dbPath, outputPath,
                             outputDBPath);
